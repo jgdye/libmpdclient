@@ -176,16 +176,6 @@ mpd_async_events(const struct mpd_async *async)
 }
 
 static bool
-ignore_errno(int e)
-{
-#ifdef _WIN32
-	return e == WSAEINTR || e == WSAEINPROGRESS;
-#else
-	return e == EINTR || e == EAGAIN;
-#endif
-}
-
-static bool
 mpd_async_read(struct mpd_async *async)
 {
 	size_t room;
@@ -204,7 +194,7 @@ mpd_async_read(struct mpd_async *async)
 	if (nbytes < 0) {
 		/* I/O error */
 
-		if (ignore_errno(mpd_socket_errno()))
+		if (mpd_socket_ignore_errno(mpd_socket_errno()))
 			return true;
 
 		mpd_error_errno(&async->error);
@@ -241,7 +231,7 @@ mpd_async_write(struct mpd_async *async)
 	if (nbytes < 0) {
 		/* I/O error */
 
-		if (ignore_errno(mpd_socket_errno()))
+		if (mpd_socket_ignore_errno(mpd_socket_errno()))
 			return true;
 
 		mpd_error_errno(&async->error);
