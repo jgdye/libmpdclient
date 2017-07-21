@@ -18,6 +18,50 @@ abort_command(struct test_capture *capture,
 	ck_assert(mpd_connection_clear_error(connection));
 }
 
+START_TEST(test_capabilities_commands)
+{
+	struct test_capture capture;
+	struct mpd_connection *c = test_capture_init(&capture);
+
+	ck_assert(mpd_send_allowed_commands(c));
+	ck_assert_str_eq(test_capture_receive(&capture), "commands\n");
+	abort_command(&capture, c);
+
+	ck_assert(mpd_send_disallowed_commands(c));
+	ck_assert_str_eq(test_capture_receive(&capture), "notcommands\n");
+	abort_command(&capture, c);
+
+	ck_assert(mpd_send_list_url_schemes(c));
+	ck_assert_str_eq(test_capture_receive(&capture), "urlhandlers\n");
+	abort_command(&capture, c);
+
+	ck_assert(mpd_send_list_tag_types(c));
+	ck_assert_str_eq(test_capture_receive(&capture), "tagtypes\n");
+	abort_command(&capture, c);
+
+	static const enum mpd_tag_type types[] = {
+		MPD_TAG_COMMENT,
+		MPD_TAG_PERFORMER,
+		MPD_TAG_MUSICBRAINZ_RELEASETRACKID,
+	};
+
+	ck_assert(mpd_send_disable_tag_types(c, types, 3));
+	ck_assert_str_eq(test_capture_receive(&capture), "tagtypes disable Comment Performer MUSICBRAINZ_RELEASETRACKID\n");
+	abort_command(&capture, c);
+
+	ck_assert(mpd_send_enable_tag_types(c, types, 3));
+	ck_assert_str_eq(test_capture_receive(&capture), "tagtypes enable Comment Performer MUSICBRAINZ_RELEASETRACKID\n");
+	abort_command(&capture, c);
+
+	ck_assert(mpd_send_clear_tag_types(c));
+	ck_assert_str_eq(test_capture_receive(&capture), "tagtypes \"clear\"\n");
+	abort_command(&capture, c);
+
+	mpd_connection_free(c);
+	test_capture_deinit(&capture);
+}
+END_TEST
+
 START_TEST(test_queue_commands)
 {
 	struct test_capture capture;
