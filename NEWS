@@ -7,6 +7,7 @@ libmpdclient 2.12 (not yet released)
   - command "listfiles"
   - grouping for "list" and "count"
   - tag "AlbumSort"
+  - "seekid" with float time
 * use relative #include paths to avoid clashes with other libmpdclient copies
 
 libmpdclient 2.11 (2017/03/20)
